@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
-from backend.model import UserMessage, TimeEntry
-from backend.clockify_api import get_slower_workspace_id, get_project_id, create_time_entry
-from backend.time_entry_agent import extract_time_entries
+from model import UserMessage, TimeEntry
+from clockify_api import get_slower_workspace_id, get_project_id, create_time_entry
+from time_entry_agent import extract_time_entries
 from datetime import datetime
 
 import sys
