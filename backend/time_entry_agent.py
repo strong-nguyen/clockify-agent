@@ -1,5 +1,5 @@
 from pydantic_ai import Agent
-from model import TimeEntry
+from backend.model import TimeEntry
 from datetime import datetime
 import asyncio
 
