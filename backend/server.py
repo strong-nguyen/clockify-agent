@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from model import UserMessage, TimeEntry
 from clockify_api import get_slower_workspace_id, get_project_id, create_time_entry
 from time_entry_agent import extract_time_entries
@@ -8,6 +9,19 @@ import sys
 
 
 app = FastAPI()
+
+origins = [
+    "http://localhost:3001", # Port của Next.js bạn đang dùng
+    "http://127.0.0.1:3001",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,            # Cho phép các origin trong danh sách
+    allow_credentials=True,
+    allow_methods=["*"],              # Cho phép tất cả các method (GET, POST, PUT, DELETE,...)
+    allow_headers=["*"],              # Cho phép tất cả các headers (Content-Type, X-Api-Key,...)
+)
 
 slower_workspace_id = get_slower_workspace_id()
 if not slower_workspace_id:

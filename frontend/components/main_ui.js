@@ -15,7 +15,7 @@ const MainUI = () => {
   const handleAddClockify = async () => {
     setStatus("Sending");
 
-    console.log("Clicked Add Clockify with message:", userMsg);
+    console.log("Clicked Add Clockify button with message:", userMsg);
 
     const url = 'http://localhost:8000/add-time-entry';
     try {
@@ -42,7 +42,10 @@ const MainUI = () => {
 
   return (
     <div className="w-200 mx-auto">
-      <textarea placeholder="What you have done today..." className="border p-2 rounded mb-4 w-full h-50" value={userMsg} onInput={(e) => setUserMsg(e.target.value)} />
+      <textarea placeholder="What you have done today..." className="border p-2 rounded mb-4 w-full h-50" value={userMsg} onInput={(e) => {
+        setUserMsg(e.target.value);
+        setStatus("");
+        }} />
       <div className={`mb-4 ${statusColors.hasOwnProperty(status) ? statusColors[status] : "text-red-600"}`}>{status}</div>
       <div className='flex flex-row gap-4 h-20'>
         <button className="bg-blue-500 text-white px-4 py-2 rounded w-1/2 cursor-pointer">Speak</button>
