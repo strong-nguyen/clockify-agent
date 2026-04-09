@@ -1,5 +1,12 @@
 "use client";
 import React from 'react'
+import dynamic from 'next/dynamic';
+
+
+// Load AudioRecorder một cách bất đồng bộ và tắt Server-Side Rendering (SSR)
+const AudioRecorder = dynamic(() => import('./AudioRecorder'), {
+  ssr: false,
+});
 
 const MainUI = () => {
   const [userMsg, setUserMsg] = React.useState("");
@@ -48,7 +55,7 @@ const MainUI = () => {
         }} />
       <div className={`mb-4 ${statusColors.hasOwnProperty(status) ? statusColors[status] : "text-red-600"}`}>{status}</div>
       <div className='flex flex-row gap-4 h-20'>
-        <button className="bg-blue-500 text-white px-4 py-2 rounded w-1/2 cursor-pointer">Speak</button>
+        <AudioRecorder/>
         <button className="bg-blue-500 text-white px-4 py-2 rounded w-1/2 cursor-pointer disabled:bg-gray-400 disabled:cursor-auto" onClick={handleAddClockify} disabled={!userMsg.trim() || status == "Sending"}>
           Add Clockify
         </button>
