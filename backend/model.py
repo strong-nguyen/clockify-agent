@@ -9,3 +9,10 @@ class TimeEntry(BaseModel):
     start_time: str
     end_time: str
     description: str
+
+
+class SpeechTranscript(BaseModel):
+    transcript: str
+    confidence_score: float
+    detected_language: str
+    # key_points: list[str]

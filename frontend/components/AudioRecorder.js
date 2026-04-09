@@ -2,11 +2,12 @@ import React from "react";
 import { useReactMediaRecorder } from "react-media-recorder-2";
 
 
-const AudioRecorder = () => {
+const AudioRecorder = ({ onSpeechToTextCompleted }) => {
   const { status, startRecording, stopRecording, mediaBlobUrl } =
     useReactMediaRecorder({ audio: true });
 
     const [currentBlobUrl, setCurrentBlobUrl] = React.useState(null);
+    const [inProgressSTT, setInProgressSTT] = React.useState(false);
 
     React.useEffect(() => {
       if (status === "recording") {
@@ -23,6 +24,8 @@ const AudioRecorder = () => {
   const handleSendToBackend = async () => {
     if (!mediaBlobUrl) return;
 
+    setInProgressSTT(true);
+
     // Chuyển đổi blob url thành file thực tế
     const audioBlob = await fetch(mediaBlobUrl).then((r) => r.blob());
     const formData = new FormData();
@@ -34,7 +37,10 @@ const AudioRecorder = () => {
       body: formData,
     });
     const result = await response.json();
-    console.log("Server response:", result);
+    console.log("Server response:", result.transcript);
+    onSpeechToTextCompleted(result.transcript)
+
+    setInProgressSTT(false);
   };
 
   return (
@@ -45,7 +51,7 @@ const AudioRecorder = () => {
       }
       
       {currentBlobUrl && (
-        <button className="bg-blue-500 text-white px-4 py-2 cursor-pointer rounded min-w-[200]" onClick={handleSendToBackend}>Speech To Text</button>
+        <button className="bg-blue-500 text-white px-4 py-2 cursor-pointer rounded min-w-[200] disabled:bg-gray-400 disabled:cursor-auto" onClick={handleSendToBackend} disabled={inProgressSTT}>Speech To Text</button>
       )}
     </div>
   );

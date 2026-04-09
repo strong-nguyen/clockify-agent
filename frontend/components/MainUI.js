@@ -55,7 +55,7 @@ const MainUI = () => {
         }} />
       <div className={`mb-4 ${statusColors.hasOwnProperty(status) ? statusColors[status] : "text-red-600"}`}>{status}</div>
       <div className='flex flex-row gap-4 h-20'>
-        <AudioRecorder/>
+        <AudioRecorder onSpeechToTextCompleted={ (transcript) => setUserMsg(transcript) }/>
         <button className="bg-blue-500 text-white px-4 py-2 rounded w-1/2 cursor-pointer disabled:bg-gray-400 disabled:cursor-auto" onClick={handleAddClockify} disabled={!userMsg.trim() || status == "Sending"}>
           Add Clockify
         </button>

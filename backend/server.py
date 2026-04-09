@@ -1,11 +1,18 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from model import UserMessage, TimeEntry
 from clockify_api import get_slower_workspace_id, get_project_id, create_time_entry
-from time_entry_agent import extract_time_entries
+from ai_agent import extract_time_entries, agent_speech_to_text
 from datetime import datetime
 
 import sys
+from pathlib import Path
+import shutil
+
+
+# Định nghĩa thư mục lưu trữ
+UPLOAD_DIR = Path("uploads")
+UPLOAD_DIR.mkdir(exist_ok=True) # Tạo thư mục nếu chưa có
 
 
 app = FastAPI()
@@ -35,6 +42,9 @@ if not project_id:
 async def add_time_entry(user_message: UserMessage):
     msg = user_message.message
     time_entries = await extract_time_entries(msg)
+    if not time_entries:
+        raise HTTPException(status_code=500, detail=f"Failed to extract time entry for user message: {msg}")
+
     for index, time_entry in enumerate(time_entries):
         print(f"Task {index} -- start: {time_entry.start_time}, end: {time_entry.end_time}, description: {time_entry.description}")
 
@@ -46,3 +56,32 @@ async def add_time_entry(user_message: UserMessage):
             print(f"[Error] Failed to add time entry for task {index}: {response}", file=sys.stderr)
             raise HTTPException(status_code=500, detail=f"Failed to add time entry for task {index}: {response}")
     return {"message": "Time entry added successfully!"}
+
+@app.post("/upload")
+async def upload(file: UploadFile = File(...)):
+    try:
+        file_path = UPLOAD_DIR / file.filename
+        
+        with file_path.open("wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+            
+        return {
+            "filename": file.filename,
+            "path": str(file_path),
+            "status": "success"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        file.file.close()
+
+
+@app.post("/stt")
+async def speech_to_text(file: UploadFile = File(...)):
+    audio_data = await file.read()
+    result = await agent_speech_to_text(audio_data)
+
+    if not result:
+        raise HTTPException(status_code=500, detail="Failed to convert speech to text at server side.")
+    
+    return {"transcript": result}
