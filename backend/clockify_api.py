@@ -20,6 +20,19 @@ def get_slower_workspace_id():
       return workspace["id"]
   return None
 
+def list_clockify_workspace():
+  headers = {"X-Api-Key": api_key}
+
+  response = requests.get("https://api.clockify.me/api/v1/workspaces", headers=headers)
+  workspaces = response.json()
+
+  list_workspaces = []
+  for workspace in workspaces:
+    list_workspaces.append({"name": workspace["name"], "id": workspace["id"]})
+  print(list_workspaces)
+  return list_workspaces
+
+
 def get_project_id(workspace_id, project_name):
   headers = {"X-Api-Key": api_key}
   url = f"https://api.clockify.me/api/v1/workspaces/{workspace_id}/projects"
@@ -30,6 +43,17 @@ def get_project_id(workspace_id, project_name):
     if project["name"] == project_name:
       return project["id"]
   return None
+
+def list_clockify_projects(workspace_id: str):
+  headers = {"X-Api-Key": api_key}
+  url = f"https://api.clockify.me/api/v1/workspaces/{workspace_id}/projects"
+  response = requests.get(url, headers=headers)
+  projects = response.json()
+
+  list_projects = []
+  for project in projects:
+    list_projects.append({"name": project["name"], "id": project["id"]})
+  return list_projects
 
 def create_time_entry(workspace_id, start_time, end_time, description, project_id=None):
   headers = {

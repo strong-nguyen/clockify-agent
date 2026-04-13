@@ -16,3 +16,13 @@ class SpeechTranscript(BaseModel):
     confidence_score: float
     detected_language: str
     # key_points: list[str]
+
+
+class ClockifyWorkspace(BaseModel):
+    id: str
+    name: str
+
+
+class ClockifyProject(BaseModel):
+    id: str
+    name: str

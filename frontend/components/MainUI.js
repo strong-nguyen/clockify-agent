@@ -1,6 +1,7 @@
 "use client";
 import React from 'react'
 import dynamic from 'next/dynamic';
+import ProjectSelector from './ProjectSelector'
 
 
 // Load AudioRecorder một cách bất đồng bộ và tắt Server-Side Rendering (SSR)
@@ -11,6 +12,8 @@ const AudioRecorder = dynamic(() => import('./AudioRecorder'), {
 const MainUI = () => {
   const [userMsg, setUserMsg] = React.useState("");
   const [status, setStatus] = React.useState(""); // Sending, Success, Error
+  const [workspaceId, setWorkspaceId] = React.useState("");
+  const [projectId, setProjectId] = React.useState("");
 
   const statusColors = {
     Sending: "text-gray-500",
@@ -24,7 +27,7 @@ const MainUI = () => {
 
     console.log("Clicked Add Clockify button with message:", userMsg);
 
-    const url = 'http://localhost:8000/add-time-entry';
+    const url = `http://localhost:8000/add-time-entry?workspace_id=${workspaceId}&project_id=${projectId}`;
     try {
       const response = await fetch(url, {
         method: 'POST',
@@ -53,10 +56,11 @@ const MainUI = () => {
         setUserMsg(e.target.value);
         setStatus("");
         }} />
+      <ProjectSelector onWorkspaceSelectionChanged={(val) => setWorkspaceId(val)} onProjectSelectionChanged={(val) => setProjectId(val)}/>
       <div className={`mb-4 ${statusColors.hasOwnProperty(status) ? statusColors[status] : "text-red-600"}`}>{status}</div>
       <div className='flex flex-row gap-4 h-20'>
         <AudioRecorder onSpeechToTextCompleted={ (transcript) => setUserMsg(transcript) }/>
-        <button className="bg-blue-500 text-white px-4 py-2 rounded w-1/2 cursor-pointer disabled:bg-gray-400 disabled:cursor-auto" onClick={handleAddClockify} disabled={!userMsg.trim() || status == "Sending"}>
+        <button className="bg-blue-500 text-white px-4 py-2 rounded w-1/2 cursor-pointer disabled:bg-gray-400 disabled:cursor-auto" onClick={handleAddClockify} disabled={!userMsg.trim() || status == "Sending" || workspaceId === ""}>
           Add Clockify
         </button>
       </div>

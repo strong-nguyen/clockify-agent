@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from model import UserMessage, TimeEntry
-from clockify_api import get_slower_workspace_id, get_project_id, create_time_entry
+from model import UserMessage, TimeEntry, ClockifyWorkspace, ClockifyProject
+from clockify_api import create_time_entry, list_clockify_workspace, list_clockify_projects
 from ai_agent import extract_time_entries, agent_speech_to_text
 from datetime import datetime
 
@@ -30,16 +30,15 @@ app.add_middleware(
     allow_headers=["*"],              # Cho phép tất cả các headers (Content-Type, X-Api-Key,...)
 )
 
-slower_workspace_id = get_slower_workspace_id()
-if not slower_workspace_id:
-    print("[Error] Cannot found workspace Slower in Clockify.", file=sys.stderr)
-    exit(1)
-project_id = get_project_id(slower_workspace_id, "PxPoint")
-if not project_id:
-    print("[Warn] Cannot found PxPoint project in workspace Slower.", file=sys.stderr)
 
 @app.post("/add-time-entry")
-async def add_time_entry(user_message: UserMessage):
+async def add_time_entry(
+    workspace_id: str = "",
+    project_id: str = "",
+    user_message: UserMessage = None):
+
+    print(f"workspace id: {workspace_id}, project id: {project_id}")
+
     msg = user_message.message
     time_entries = await extract_time_entries(msg)
     if not time_entries:
@@ -51,7 +50,7 @@ async def add_time_entry(user_message: UserMessage):
         start_time = datetime.fromisoformat(time_entry.start_time)
         end_time = datetime.fromisoformat(time_entry.end_time)
 
-        ret, response = create_time_entry(slower_workspace_id, start_time, end_time, time_entry.description, project_id)
+        ret, response = create_time_entry(workspace_id, start_time, end_time, time_entry.description, project_id)
         if not ret:
             print(f"[Error] Failed to add time entry for task {index}: {response}", file=sys.stderr)
             raise HTTPException(status_code=500, detail=f"Failed to add time entry for task {index}: {response}")
@@ -85,3 +84,18 @@ async def speech_to_text(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail="Failed to convert speech to text at server side.")
     
     return {"transcript": result}
+
+@app.get("/list-workspaces", response_model=list[ClockifyWorkspace])
+def list_workspaces():
+    try:
+        return list_clockify_workspace()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Could not fetch workspaces from Clockify")
+    
+
+@app.get("/list-projects", response_model=list[ClockifyProject])
+def list_projects(workspace_id: str):
+    try:
+        return list_clockify_projects(workspace_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Could not fetch projects from Clockify")
