@@ -7,14 +7,12 @@ from google import generativeai as genai
 import os
 
 
-print("Lis gemini models:")
+print("LisT gemini models:")
 for m in genai.list_models():
     if 'generateContent' in m.supported_generation_methods:
-        print(f"Model: {m.name}")
+        print(f"{m.name}")
 
-# 2. Setup the Agent (Use your Gemini API Key)
 time_entry_agent = Agent(
-    # 'google-gla:gemini-3-flash-preview',
     "google-gla:gemini-3.1-flash-lite-preview",
     output_type=list[TimeEntry],
     system_prompt=
@@ -24,7 +22,6 @@ time_entry_agent = Agent(
     "If the user says 'today', use the current date provided in the context. " \
     "If the user says 'now', use the current time provided in the context.")
 
-# genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 model = genai.GenerativeModel('models/gemini-3.1-flash-lite-preview')
 
 async def extract_time_entries(user_message: str) -> list[TimeEntry]:
